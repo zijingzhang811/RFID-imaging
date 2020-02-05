@@ -1,9 +1,12 @@
-
+close all
+clear
+clc
 
 % Parameters.
 [tagPosition, rxPosition, freq] = tag_antenna_positions3D_func();
 TagNum = size(tagPosition, 1);
 RecvNum = size(rxPosition, 1);
+RecvNum0=4;
 FreqNum = length(freq);
 c = physconst('LightSpeed'); 
 
@@ -16,24 +19,24 @@ rssiDiffTh = .5;    % Set the threshold of RSSI. This variable is useless is you
 RJT = 1;    % 1 means you threshold the RSSI, and other values means you don't threshold the RSSI.
 
 % Specify data directory and name.
-dirName = 'F:\RFID imaging\data 0129\';
+dirName = 'F:\RFID imaging\data 0112720\';
 % fileName = 'wo_1224';
 opts.calibType = 1;
 
-% Load the raw data.
-load([dirName, 'data_wo02','.mat']); % Looking at 2 minute cases
+% Load the raw data. wo 1-1
+load([dirName,  'data_wo_0127','.mat']); % Looking at 2 minute cases  wo_1224
 % data_wo = [chindexlist, tagindexlist, antennalist, rssiimpinjlist, rssiimpinjlist_d, phasedeglist];
 
 % Generate the data matrices.
-PhaseDataCollect1 = cell(TagNum, RecvNum, FreqNum);
-PhaseCollectStd1 = zeros(TagNum, RecvNum, FreqNum);
-PhaseCollectMean1 = zeros(TagNum, RecvNum, FreqNum);
-RSSIDataCollect1 = cell(TagNum, RecvNum, FreqNum);
-RSSICollectStd1 = zeros(TagNum, RecvNum, FreqNum);
-RSSICollectMean1 = zeros(TagNum, RecvNum, FreqNum);
-CompNumDataCollect1 = cell(TagNum, RecvNum, FreqNum);
-CompNumCollectMean1 = zeros(TagNum, RecvNum, FreqNum);
-for j = 1:RecvNum
+PhaseDataCollect11 = cell(TagNum, RecvNum0, FreqNum);
+PhaseCollectStd11 = zeros(TagNum, RecvNum0, FreqNum);
+PhaseCollectMean11 = zeros(TagNum, RecvNum0, FreqNum);
+RSSIDataCollect11 = cell(TagNum, RecvNum0, FreqNum);
+RSSICollectStd111 = zeros(TagNum, RecvNum0, FreqNum);
+RSSICollectMean11 = zeros(TagNum, RecvNum0, FreqNum);
+CompNumDataCollect11 = cell(TagNum, RecvNum0, FreqNum);
+CompNumCollectMean11 = zeros(TagNum, RecvNum0, FreqNum);
+for j = 1:RecvNum0
     phase_t = phasedeglist(antennalist == j);
     rssi_t = rssiimpinjlist_d(antennalist == j);
     cha_t = chindexlist(antennalist == j);
@@ -47,52 +50,111 @@ for j = 1:RecvNum
             phase_ttt = rad2deg(unwrap(deg2rad(phase_ttt)));
             rssi_ttt = rssi_tt(tag_tt == i);
             if ~isempty(phase_ttt)
-                PhaseDataCollect1{i, j, k} = phase_ttt;
-                PhaseCollectStd1(i, j, k) = std(phase_ttt);
-                RSSIDataCollect1{i, j, k} = rssi_ttt;
-                RSSICollectStd1(i, j, k) = std(rssi_ttt);
-                CompNumDataCollect1{i, j, k} = rssi_ttt.*cos(deg2rad(phase_ttt)) + sqrt(-1).*rssi_ttt.*sin(deg2rad(phase_ttt));
-                if PhaseCollectStd1(i, j, k) > phStdTh
+                PhaseDataCollect11{i, j, k} = phase_ttt;
+                PhaseCollectStd11(i, j, k) = std(phase_ttt);
+                RSSIDataCollect11{i, j, k} = rssi_ttt;
+                RSSICollectStd111(i, j, k) = std(rssi_ttt);
+                CompNumDataCollect11{i, j, k} = rssi_ttt.*cos(deg2rad(phase_ttt)) + sqrt(-1).*rssi_ttt.*sin(deg2rad(phase_ttt));
+                if PhaseCollectStd11(i, j, k) > phStdTh
                     % First completely reject the channel using phase
                     % standard deviation threshold.
-                    PhaseCollectMean1(i, j, k) = NaN;
-                    RSSICollectMean1(i, j, k) = NaN;
-                    CompNumCollectMean1(i, j, k) = NaN;
+                    PhaseCollectMean11(i, j, k) = NaN;
+                    RSSICollectMean11(i, j, k) = NaN;
+                    CompNumCollectMean11(i, j, k) = NaN;
                 else
-                    PhaseCollectMean1(i, j, k) = mean(phase_ttt);
-                    RSSICollectMean1(i, j, k) = mean(rssi_ttt);
-                    CompNumCollectMean1(i, j, k) = mean(CompNumDataCollect1{i, j, k});
+                    PhaseCollectMean11(i, j, k) = mean(phase_ttt);
+                    RSSICollectMean11(i, j, k) = mean(rssi_ttt);
+                    CompNumCollectMean11(i, j, k) = mean(CompNumDataCollect11{i, j, k});
                 end
             else
                 % Simply there's no data received for this channel.
-                PhaseDataCollect1{i, j, k} = NaN;
-                PhaseCollectStd1(i, j, k) = NaN;
-                PhaseCollectMean1(i, j, k) = NaN;
-                RSSIDataCollect1{i, j, k} = NaN;
-                RSSICollectStd1(i, j, k) = NaN;
-                RSSICollectMean1(i, j, k) = NaN;
-                CompNumDataCollect1{i, j, k} = NaN;
-                CompNumCollectMean1(i, j, k) = NaN;
+                PhaseDataCollect11{i, j, k} = NaN;
+                PhaseCollectStd11(i, j, k) = NaN;
+                PhaseCollectMean11(i, j, k) = NaN;
+                RSSIDataCollect11{i, j, k} = NaN;
+                RSSICollectStd111(i, j, k) = NaN;
+                RSSICollectMean11(i, j, k) = NaN;
+                CompNumDataCollect11{i, j, k} = NaN;
+                CompNumCollectMean11(i, j, k) = NaN;
+            end                
+        end
+    end
+end
+clear chindexlist tagindexlist antennalist rssiimpinjlist rssiimpinjlist_d phasedeglist
+% Load the raw data. wo 1-2
+load([dirName, 'data_wo02_0127','.mat']); % Looking at 2 minute cases
+% data_wo = [chindexlist, tagindexlist, antennalist, rssiimpinjlist, rssiimpinjlist_d, phasedeglist];
+
+% Generate the data matrices.
+PhaseDataCollect12 = cell(TagNum, RecvNum0, FreqNum);
+PhaseCollectStd12 = zeros(TagNum, RecvNum0, FreqNum);
+PhaseCollectMean12 = zeros(TagNum, RecvNum0, FreqNum);
+RSSIDataCollect12 = cell(TagNum, RecvNum0, FreqNum);
+RSSICollectStd112 = zeros(TagNum, RecvNum0, FreqNum);
+RSSICollectMean12 = zeros(TagNum, RecvNum0, FreqNum);
+CompNumDataCollect12 = cell(TagNum, RecvNum0, FreqNum);
+CompNumCollectMean12 = zeros(TagNum, RecvNum0, FreqNum);
+for j = 1:RecvNum0
+    phase_t = phasedeglist(antennalist == j);
+    rssi_t = rssiimpinjlist_d(antennalist == j);
+    cha_t = chindexlist(antennalist == j);
+    tag_t = tagindexlist(antennalist == j);
+    for k = 1:FreqNum
+        phase_tt = phase_t(cha_t == k);
+        rssi_tt = rssi_t(cha_t == k);
+        tag_tt = tag_t(cha_t == k);
+        for i = 1:TagNum
+            phase_ttt = phase_tt(tag_tt == i);
+            phase_ttt = rad2deg(unwrap(deg2rad(phase_ttt)));
+            rssi_ttt = rssi_tt(tag_tt == i);
+            if ~isempty(phase_ttt)
+                PhaseDataCollect12{i, j, k} = phase_ttt;
+                PhaseCollectStd12(i, j, k) = std(phase_ttt);
+                RSSIDataCollect12{i, j, k} = rssi_ttt;
+                RSSICollectStd112(i, j, k) = std(rssi_ttt);
+                CompNumDataCollect12{i, j, k} = rssi_ttt.*cos(deg2rad(phase_ttt)) + sqrt(-1).*rssi_ttt.*sin(deg2rad(phase_ttt));
+                if PhaseCollectStd12(i, j, k) > phStdTh
+                    % First completely reject the channel using phase
+                    % standard deviation threshold.
+                    PhaseCollectMean12(i, j, k) = NaN;
+                    RSSICollectMean12(i, j, k) = NaN;
+                    CompNumCollectMean12(i, j, k) = NaN;
+                else
+                    PhaseCollectMean12(i, j, k) = mean(phase_ttt);
+                    RSSICollectMean12(i, j, k) = mean(rssi_ttt);
+                    CompNumCollectMean12(i, j, k) = mean(CompNumDataCollect12{i, j, k});
+                end
+            else
+                % Simply there's no data received for this channel.
+                PhaseDataCollect12{i, j, k} = NaN;
+                PhaseCollectStd12(i, j, k) = NaN;
+                PhaseCollectMean12(i, j, k) = NaN;
+                RSSIDataCollect12{i, j, k} = NaN;
+                RSSICollectStd112(i, j, k) = NaN;
+                RSSICollectMean12(i, j, k) = NaN;
+                CompNumDataCollect12{i, j, k} = NaN;
+                CompNumCollectMean12(i, j, k) = NaN;
             end                
         end
     end
 end
 clear chindexlist tagindexlist antennalist rssiimpinjlist rssiimpinjlist_d phasedeglist
 
-% Load the raw data.
-load([dirName, 'data_mbox02','.mat']); 
+
+% Load the raw data.  w 2-1 smallball02_1224
+load([dirName,'data_zijing_0127','.mat']); 
 % data_w = [chindexlist, tagindexlist, antennalist, rssiimpinjlist, rssiimpinjlist_d, phasedeglist];
 
 % Generate the data matrices.
-PhaseDataCollect2 = cell(TagNum, RecvNum, FreqNum);
-PhaseCollectStd2 = zeros(TagNum, RecvNum, FreqNum);
-PhaseCollectMean2 = zeros(TagNum, RecvNum, FreqNum);
-RSSIDataCollect2 = cell(TagNum, RecvNum, FreqNum);
-RSSICollectStd2 = zeros(TagNum, RecvNum, FreqNum);
-RSSICollectMean2 = zeros(TagNum, RecvNum, FreqNum);
-CompNumDataCollect2 = cell(TagNum, RecvNum, FreqNum);
-CompNumCollectMean2 = zeros(TagNum, RecvNum, FreqNum);
-for j = 1:RecvNum
+PhaseDataCollect21 = cell(TagNum, RecvNum0, FreqNum);
+PhaseCollectStd21 = zeros(TagNum, RecvNum0, FreqNum);
+PhaseCollectMean21 = zeros(TagNum, RecvNum0, FreqNum);
+RSSIDataCollect21 = cell(TagNum, RecvNum0, FreqNum);
+RSSICollectStd21 = zeros(TagNum, RecvNum0, FreqNum);
+RSSICollectMean21 = zeros(TagNum, RecvNum0, FreqNum);
+CompNumDataCollect21 = cell(TagNum, RecvNum0, FreqNum);
+CompNumCollectMean21 = zeros(TagNum, RecvNum0, FreqNum);
+for j = 1:RecvNum0
     phase_t = phasedeglist(antennalist == j);
     rssi_t = rssiimpinjlist_d(antennalist == j);
     cha_t = chindexlist(antennalist == j);
@@ -106,39 +168,102 @@ for j = 1:RecvNum
             phase_ttt = rad2deg(unwrap(deg2rad(phase_ttt)));
             rssi_ttt = rssi_tt(tag_tt == i);
             if ~isempty(phase_ttt)
-                PhaseDataCollect2{i, j, k} = phase_ttt;
-                PhaseCollectStd2(i, j, k) = std(phase_ttt);
-                RSSIDataCollect2{i, j, k} = rssi_ttt;
-                RSSICollectStd2(i, j, k) = std(rssi_ttt);
-                CompNumDataCollect2{i, j, k} = rssi_ttt.*cos(deg2rad(phase_ttt)) + sqrt(-1).*rssi_ttt.*sin(deg2rad(phase_ttt));
-                if PhaseCollectStd2(i, j, k) > phStdTh
+                PhaseDataCollect21{i, j, k} = phase_ttt;
+                PhaseCollectStd21(i, j, k) = std(phase_ttt);
+                RSSIDataCollect21{i, j, k} = rssi_ttt;
+                RSSICollectStd21(i, j, k) = std(rssi_ttt);
+                CompNumDataCollect21{i, j, k} = rssi_ttt.*cos(deg2rad(phase_ttt)) + sqrt(-1).*rssi_ttt.*sin(deg2rad(phase_ttt));
+                if PhaseCollectStd21(i, j, k) > phStdTh
                     % First completely reject the channel using phase
                     % standard deviation threshold.
-                    PhaseCollectMean2(i, j, k) = NaN;
-                    RSSICollectMean2(i, j, k) = NaN;
-                    CompNumCollectMean2(i, j, k) = NaN;
+                    PhaseCollectMean21(i, j, k) = NaN;
+                    RSSICollectMean21(i, j, k) = NaN;
+                    CompNumCollectMean21(i, j, k) = NaN;
                 else
-                    PhaseCollectMean2(i, j, k) = mean(phase_ttt);
-                    RSSICollectMean2(i, j, k) = mean(rssi_ttt);
-                    CompNumCollectMean2(i, j, k) = mean(CompNumDataCollect2{i, j, k});
+                    PhaseCollectMean21(i, j, k) = mean(phase_ttt);
+                    RSSICollectMean21(i, j, k) = mean(rssi_ttt);
+                    CompNumCollectMean21(i, j, k) = mean(CompNumDataCollect21{i, j, k});
                 end
             else
                 % Simply there's no data received for this channel.
-                PhaseDataCollect2{i, j, k} = NaN;
-                PhaseCollectStd2(i, j, k) = NaN;
-                PhaseCollectMean2(i, j, k) = NaN;
-                RSSIDataCollect2{i, j, k} = NaN;
-                RSSICollectStd2(i, j, k) = NaN;
-                RSSICollectMean2(i, j, k) = NaN;
-                CompNumDataCollect2{i, j, k} = NaN;
-                CompNumCollectMean2(i, j, k) = NaN;
+                PhaseDataCollect21{i, j, k} = NaN;
+                PhaseCollectStd21(i, j, k) = NaN;
+                PhaseCollectMean21(i, j, k) = NaN;
+                RSSIDataCollect21{i, j, k} = NaN;
+                RSSICollectStd21(i, j, k) = NaN;
+                RSSICollectMean21(i, j, k) = NaN;
+                CompNumDataCollect21{i, j, k} = NaN;
+                CompNumCollectMean21(i, j, k) = NaN;
             end                
         end
     end
 end
 clear chindexlist tagindexlist antennalist rssiimpinjlist rssiimpinjlist_d phasedeglist
 
+% Load the raw data.  w 2-2
+load([dirName, 'data_zijing02_0127','.mat']); 
+% data_w = [chindexlist, tagindexlist, antennalist, rssiimpinjlist, rssiimpinjlist_d, phasedeglist];
 
+% Generate the data matrices.
+PhaseDataCollect22 = cell(TagNum, RecvNum0, FreqNum);
+PhaseCollectStd22 = zeros(TagNum, RecvNum0, FreqNum);
+PhaseCollectMean22 = zeros(TagNum, RecvNum0, FreqNum);
+RSSIDataCollect22 = cell(TagNum, RecvNum0, FreqNum);
+RSSICollectStd22 = zeros(TagNum, RecvNum0, FreqNum);
+RSSICollectMean22 = zeros(TagNum, RecvNum0, FreqNum);
+CompNumDataCollect22 = cell(TagNum, RecvNum0, FreqNum);
+CompNumCollectMean22 = zeros(TagNum, RecvNum0, FreqNum);
+for j = 1:RecvNum0
+    phase_t = phasedeglist(antennalist == j);
+    rssi_t = rssiimpinjlist_d(antennalist == j);
+    cha_t = chindexlist(antennalist == j);
+    tag_t = tagindexlist(antennalist == j);
+    for k = 1:FreqNum
+        phase_tt = phase_t(cha_t == k);
+        rssi_tt = rssi_t(cha_t == k);
+        tag_tt = tag_t(cha_t == k);
+        for i = 1:TagNum
+            phase_ttt = phase_tt(tag_tt == i);
+            phase_ttt = rad2deg(unwrap(deg2rad(phase_ttt)));
+            rssi_ttt = rssi_tt(tag_tt == i);
+            if ~isempty(phase_ttt)
+                PhaseDataCollect22{i, j, k} = phase_ttt;
+                PhaseCollectStd22(i, j, k) = std(phase_ttt);
+                RSSIDataCollect22{i, j, k} = rssi_ttt;
+                RSSICollectStd22(i, j, k) = std(rssi_ttt);
+                CompNumDataCollect22{i, j, k} = rssi_ttt.*cos(deg2rad(phase_ttt)) + sqrt(-1).*rssi_ttt.*sin(deg2rad(phase_ttt));
+                if PhaseCollectStd22(i, j, k) > phStdTh
+                    % First completely reject the channel using phase
+                    % standard deviation threshold.
+                    PhaseCollectMean22(i, j, k) = NaN;
+                    RSSICollectMean22(i, j, k) = NaN;
+                    CompNumCollectMean22(i, j, k) = NaN;
+                else
+                    PhaseCollectMean22(i, j, k) = mean(phase_ttt);
+                    RSSICollectMean22(i, j, k) = mean(rssi_ttt);
+                    CompNumCollectMean22(i, j, k) = mean(CompNumDataCollect22{i, j, k});
+                end
+            else
+                % Simply there's no data received for this channel.
+                PhaseDataCollect22{i, j, k} = NaN;
+                PhaseCollectStd22(i, j, k) = NaN;
+                PhaseCollectMean22(i, j, k) = NaN;
+                RSSIDataCollect22{i, j, k} = NaN;
+                RSSICollectStd22(i, j, k) = NaN;
+                RSSICollectMean22(i, j, k) = NaN;
+                CompNumDataCollect22{i, j, k} = NaN;
+                CompNumCollectMean22(i, j, k) = NaN;
+            end                
+        end
+    end
+end
+clear chindexlist tagindexlist antennalist rssiimpinjlist rssiimpinjlist_d phasedeglist
+RSSICollectMean1=cat(2,RSSICollectMean11,RSSICollectMean12);
+RSSICollectMean2=cat(2,RSSICollectMean21,RSSICollectMean22);
+CompNumCollectMean1=cat(2,CompNumCollectMean11,CompNumCollectMean12);
+CompNumCollectMean2=cat(2,CompNumCollectMean21,CompNumCollectMean22);
+PhaseCollectMean1=cat(2,PhaseCollectMean11,PhaseCollectMean12);
+PhaseCollectMean2=cat(2,PhaseCollectMean21,PhaseCollectMean22);
 % Reject the channels with blocked RSSI's.
 if RJT == 1
     for n = 1:TagNum
@@ -699,9 +824,9 @@ b = G_calib(:);
 
 %% Reconstruction.
 % The voxel coordinates.
-x_v=0:0.03:1.5;
-y_v=0:0.03:1.5;
-z_v=0:0.03:1.5;
+x_v=0:0.05:1.5;
+y_v=0:0.05:1.5;
+z_v=0:0.08:2.4;
 
 NxVoxel = length(x_v);
 NyVoxel = length(y_v);
@@ -761,35 +886,16 @@ ReconsDistMax = max(imgComplexAbs);
 ReconsDistMin = min(imgComplexAbs);
 ReconsDistNorm = (imgComplexAbs - ReconsDistMin)/(ReconsDistMax - ReconsDistMin);
 
-Threshold = ReconsDistMax*0.8;
+Threshold = ReconsDistMax*0.6;
 % image_3D = imgComplexAbs;
 % image_3D(imgComplexAbs < Threshold)=nan;
 % image_3D = reshape(image_3D, [length(x_v), length(y_v), length(z_v)]);
 imgComplexAbs = reshape(imgComplexAbs, [length(x_v), length(y_v), length(z_v)]);
 imgComplexAbs(imgComplexAbs < Threshold) = 0;
-imgComplexAbs(imgComplexAbs >= Threshold) = 1;
+%ReconsDistNorm(ReconsDistNorm <0.1 ) = 0;
 
-% Clustering.
-roomSize = [x_v(1), x_v(length(x_v)); y_v(1), y_v(length(y_v)); z_v(1), z_v(length(z_v))];
-voxelSize = [x_v(2)-x_v(1); y_v(2)-y_v(1); z_v(2)-z_v(1)];
-[cDistribution, clusters,~] = i4block_components(imgComplexAbs, roomSize, voxelSize);
+% imgComplexAbs(imgComplexAbs >= Threshold) = 1;
 
-fprintf('Initial cluster number = %d\n',length(clusters.centroid));
-for i = 1:size(clusters.centroid,1)
-    fprintf('Clusters centroid: [%3.2f, %3.2f, %3.2f] with element number %d\n',clusters.centroid(i,:),clusters.elemNum(i));
-end
-fprintf('\n');
-opts.distTh = 0.2; % distance threshold, clusters with centers closer than this will be combined
-opts.XYdistTh = 0.2;
-opts.elemNumTh = 0.61; % clusters with element number less than 60% of the maximum will be rejected
-opts.minHeightRatio = 0.6; % Minimum height ratio compared to largest object, exact ht depends on voxel size etc.
-clusterOut = clusterProcess(clusters,opts);
-
-centroid = clusterOut.centroid;
-elemNum = clusterOut.elemNum;
-for i = 1:size(centroid,1)
-    fprintf('Clusters centroid: [%3.2f, %3.2f, %3.2f] with element number %d\n',centroid(i,:),elemNum(i));
-end
 
 
 %% Plotting.
@@ -801,38 +907,15 @@ ReconsDistNorm = reshape(ReconsDistNorm, [length(x_v), length(y_v), length(z_v)]
 % reflectivity, in a 3D grid.
 [X_V, Y_V, Z_V] = meshgrid(x_v, y_v, z_v);
 ReconsDistNorm = permute(ReconsDistNorm, [2 1 3]);
-ReconsDistNorm(ReconsDistNorm<0.8)=0;
-imgBrightnessf = csaps({x_v,y_v,z_v},ReconsDistNorm,0.99999);
-imgSpline = fnval(imgBrightnessf,{x_v,y_v,z_v}) ;
-[gx1,gy1,gz1] = gradient(imgSpline);
+[gx1,gy1,gz1] = gradient(ReconsDistNorm);
  g1=sqrt(gx1.^2 +gy1.^2 +gz1.^2);
+ g1Max=max(g1(:));
 
-figure
-h = slice(X_V, Y_V, Z_V,ReconsDistNorm ,x_v,y_v,z_v);
-% imgComplexAbs(imgComplexAbs == 0) = NaN;
-% h = slice(X_V, Y_V, Z_V, imgComplexAbs,x_v,y_v,z_v);
-xlabel('x / m','FontSize',14);
-ylabel('y / m','FontSize',14);
-zlabel('z / m','FontSize',14);
-xlim([x_v(1), x_v(length(x_v))]);
-ylim([y_v(1), y_v(length(y_v))]);
-zlim([z_v(1), z_v(length(z_v))]);
-
-set(h, 'EdgeColor','none',...
-    'FaceColor','interp',...
-    'FaceAlpha','interp');
-alpha('color');
-a = alphamap('rampup',256);
-imgThresh = 200;
-a(1:imgThresh) = 0;
-alphamap(a);
-set(gca, 'fontweight', 'bold');
-
-hold on
-scatter3(2.4, 1.8, 1.2, 5, 'bo', 'LineWidth', 5);
-
-figure
-h = slice(X_V, Y_V, Z_V,g1 ,x_v,y_v,z_v);
+Threshold = g1Max*0.7;
+g1(g1 < Threshold) = 0;
+%g1(g1 > Threshold) = 1;
+%h = slice(X_V, Y_V, Z_V, ReconsDistNorm,x_v,y_v,z_v);
+h = slice(X_V, Y_V, Z_V, g1,x_v,y_v,z_v);
 % imgComplexAbs(imgComplexAbs == 0) = NaN;
 % h = slice(X_V, Y_V, Z_V, imgComplexAbs,x_v,y_v,z_v);
 xlabel('x / m','FontSize',14);
@@ -854,8 +937,10 @@ set(gca, 'fontweight', 'bold');
 
 hold on
 scatter3(2.4, 1.8, 1.2, 5, 'bo', 'LineWidth', 5);
- g1(g1<0.2)=0;
-  g1(g1>0.2)=1;
+
+% Clustering.
+roomSize = [x_v(1), x_v(length(x_v)); y_v(1), y_v(length(y_v)); z_v(1), z_v(length(z_v))];
+voxelSize = [x_v(2)-x_v(1); y_v(2)-y_v(1); z_v(2)-z_v(1)];
 [cDistribution, clusters,centroidDist] = i4block_components(g1, roomSize, voxelSize);
 
 fprintf('Initial cluster number = %d\n',length(clusters.centroid));
@@ -874,8 +959,8 @@ elemNum = clusterOut.elemNum;
 for i = 1:size(centroid,1)
     fprintf('Clusters centroid: [%3.2f, %3.2f, %3.2f] with element number %d\n',centroid(i,:),elemNum(i));
 end
-
-%Plot the tags and receiver antennas.
+%{
+% Plot the tags and receiver antennas.
 figure;
 x0=400;
 y0=200;
@@ -886,7 +971,7 @@ set(gcf,'position',[x0,y0,width,height]);
 scatter3(tagPosition(:, 1), tagPosition(:, 2), tagPosition(:, 3), 'r*');
 hold on;
 scatter3(rxPosition(:, 1), rxPosition(:, 2), rxPosition(:, 3), 'b');
-axis 'equal';
+% axis 'equal';
 
 grid on
 xt = 0:0.5:x_v(length(x_v));
@@ -896,17 +981,17 @@ set(gca,'xtick',xt, 'xticklabel', 100*xt);
 set(gca,'ytick',yt, 'yticklabel', 100*yt);
 set(gca,'ztick',zt, 'zticklabel', 100*zt);
 
-xlim([0 1.8]);
-ylim([0 1.8]);
-zlim([0 1.8]);
+xlim([-0.4 4.2]);
+ylim([-0.4 4.2]);
+zlim([0.8 2.6]);
 legend('Tags','Receivers');
 set(gca, 'FontSize', 15);
 xlabel('x coordinate (cm)');
 ylabel('y coordinate (cm)');
 zlabel('z coordinate (cm)');
+%}
 
-
-% Plot the image.
+% % Plot the image.
 % figure;
 % x0=400;
 % y0=200;
